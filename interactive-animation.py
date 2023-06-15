@@ -1,7 +1,4 @@
-import pygame
-
-# Initialize Pygame
-pygame.init()
+import arcade
 
 # Screen dimensions
 SCREEN_WIDTH = 800
@@ -11,53 +8,46 @@ SCREEN_HEIGHT = 600
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
-# Create the screen
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Interactive Animation")
+class MyGame(arcade.Window):
+    def __init__(self, width, height):
+        super().__init__(width, height, "Interactive Animation")
+        self.player_x = 400
+        self.player_y = 300
+        self.player_radius = 30
+        self.player_color = RED
+        self.animation_radius = 60
+        self.animation_color = WHITE
+        self.animation_active = False
 
-# Player properties
-player_x = 400
-player_y = 300
-player_radius = 30
-player_color = RED
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_circle_filled(self.player_x, 
+                                  self.player_y, 
+                                  self.player_radius, 
+                                  self.player_color)
+        if self.animation_active:
+            arcade.draw_circle_filled(self.player_x, 
+                                       self.player_y, 
+                                       self.animation_radius, 
+                                       self.animation_color)
 
-# Animation properties
-animation_radius = 60
-animation_color = WHITE
-animation_active = False
+    def on_mouse_press(self, x, y, button, modifiers):
+        if (self.player_x - self.player_radius <= 
+            x <= self.player_x + self.player_radius and
+                self.player_y - self.player_radius <= 
+            y <= self.player_y + self.player_radius):
+            self.animation_active = True
 
-# Game loop
-running = True
-clock = pygame.time.Clock()
+    def update(self, delta_time):
+        if self.animation_active:
+            self.animation_radius += 1
+            if self.animation_radius > 100:
+                self.animation_active = False
+                self.animation_radius = 0
 
-while running:
-    # Handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-            if pygame.Rect(player_x - player_radius, player_y - player_radius,
-                           2 * player_radius, 2 * player_radius).collidepoint(mouse_pos):
-                animation_active = True
+def main():
+    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
+    arcade.run()
 
-    # Clear the screen
-    screen.fill((0, 0, 0))
-
-    # Draw the player
-    pygame.draw.circle(screen, player_color, (player_x, player_y), player_radius)
-
-    # Update the animation
-    if animation_active:
-        pygame.draw.circle(screen, animation_color, (player_x, player_y), animation_radius)
-        animation_radius += 1
-        if animation_radius > 100:
-            animation_active = False
-            animation_radius = 0
-
-    # Update the display
-    pygame.display.flip()
-    clock.tick(60)
-
-# Quit the game
-pygame.quit()
+if __name__ == "__main__":
+    main()
